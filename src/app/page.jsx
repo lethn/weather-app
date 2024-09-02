@@ -67,7 +67,7 @@ export default function Home() {
           width={500}
           height={500}
           className="rounded-md w-[6rem]"
-          alt="Company Logo"
+          alt="Weather Logo"
         />
         <h1 className="text-4xl font-bold m-2">Weather App</h1>
         <h1 className="mb-6"> &copy; Author: Thuan Luu</h1>
