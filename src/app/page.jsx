@@ -5,28 +5,47 @@ import Image from "next/image";
 export default function Home() {
   const [city, setCity] = useState('');
   const [weather, setWeather] = useState(null);
-  const [showInfo, setShowInfo] = useState(false); // New state for info modal
+  const [forecast, setForecast] = useState(null);
+  const [showInfo, setShowInfo] = useState(false);
 
-  const fetchWeather = async () => {
-    const apiKey = 'a4ff56f6f54fbcb82179dfd2a976d9a6'; // API Key
+  const apiKey = 'a4ff56f6f54fbcb82179dfd2a976d9a6'; // API Key
+
+  // Fetch current weather
+  const fetchWeather = async (cityName) => {
     try {
-      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}&units=metric`);
       if (!response.ok) {
         throw new Error(
           `Failed to fetch data: ${response.status} ${response.statusText}`
         );
       }
       const data = await response.json();
-      alert("Get weather information successfully!");
       setWeather(data);
     } catch (error) {
       alert("Failed to get weather information!");
     }
   };
 
+  // Fetch 5-day forecast
+  const fetchForecast = async (cityName) => {
+    try {
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${apiKey}&units=metric`);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch forecast data: ${response.status} ${response.statusText}`
+        );
+      }
+      const data = await response.json();
+      setForecast(data);
+    } catch (error) {
+      alert("Failed to get forecast information!");
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetchWeather();
+    fetchWeather(city);
+    fetchForecast(city);
   };
 
   const convertToFahrenheit = (celsius) => (celsius * 9 / 5) + 32;
@@ -38,6 +57,7 @@ export default function Home() {
   const handleCloseInfo = () => {
     setShowInfo(false);
   };
+
 
   return (
     <div>
@@ -104,7 +124,26 @@ export default function Home() {
             </div>
           </div>
         )}
-        
+
+        {forecast && (
+          <div className='flex flex-col items-center m-6 border py-2 px-4 rounded-md border-black'>
+            <h1 className="text-2xl font-bold text-center">
+              5-Day Forecast
+            </h1>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {forecast.list
+                .filter((day) => day.dt_txt.includes("12:00:00")) // Filter for forecasts at noon (12:00)
+                .map((day, index) => (
+                  <div key={index} className="flex flex-col items-center p-2 bg-gray-100 rounded-md">
+                    <h2>{new Date(day.dt * 1000).toLocaleDateString()}</h2>
+                    <p>Temperature: {convertToFahrenheit(day.main.temp).toFixed(2)}°F</p>
+                    <p>Description: {day.weather[0].main}</p>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
